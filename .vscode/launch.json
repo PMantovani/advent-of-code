@@ -8,9 +8,9 @@
             "name": "Launch",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/4/target/debug/${workspaceFolderBasename}",
+            "program": "${workspaceFolder}/5/target/debug/${workspaceFolderBasename}",
             "args": [],
-            "cwd": "${workspaceFolder}/4",
+            "cwd": "${workspaceFolder}/5",
             "preLaunchTask": "rust: cargo build" // This is the key line
         }
     ]
