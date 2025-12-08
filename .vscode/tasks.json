@@ -5,7 +5,7 @@
             "label": "rust: cargo build",
             "type": "shell",
             "command": "cargo build",
-            "options": {"cwd": "${workspaceFolder}/6"},
+            "options": {"cwd": "${workspaceFolder}/7"},
             "group": {
                 "kind": "build",
                 "isDefault": true
