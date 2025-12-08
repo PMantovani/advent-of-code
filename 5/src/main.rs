@@ -56,27 +56,13 @@ fn part_2() {
         for j in 0..idx {
             let Some(j_set) = jointed_sets[j].clone() else { continue };
 
-            if cmp_set.start() >= j_set.start() && cmp_set.start() <= j_set.end() {
-                // começo de r está contido em j. Set deve ser começo de j e final do maior entre os dois.
+            if cmp_set.end() >= j_set.start() && cmp_set.start() <= j_set.end() {
+                // sets are connected, merge them!
                 let new_end = *cmp_set.end().max(j_set.end());
-                let new_start = *j_set.start();
-                cmp_set = new_start..=new_end;
-                jointed_sets[j] = None;
-            } else if cmp_set.end() <= j_set.end() && cmp_set.end() >= j_set.start() {
-                // final de r está contido em j. Set deve ser final de j, e começo do menor entre os dois.
-                let new_end = *j_set.end();
                 let new_start = *cmp_set.start().min(j_set.start());
                 cmp_set = new_start..=new_end;
                 jointed_sets[j] = None;
-
-            } else if cmp_set.start() <= j_set.start() && cmp_set.end() >= j_set.end() {
-                // j está contido em cmp_set. Set deve ser cmp_set.
-                let new_end = *cmp_set.end();
-                let new_start = *cmp_set.start();
-                cmp_set = new_start..=new_end;
-                jointed_sets[j] = None;
             }
-            // caso contrário, disjointed set. não mergear.
         }
         jointed_sets[idx] = Some(cmp_set);
     });
