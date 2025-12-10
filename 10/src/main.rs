@@ -1,8 +1,7 @@
 use regex::Regex;
 use std::fs;
-use std::ops::Add;
-use z3::Solver;
 use z3::ast::Int;
+use z3::{Optimize, SatResult};
 
 fn main() {
     // part_1();
@@ -55,13 +54,13 @@ fn find_button_presses(machine: &Machine) -> Option<usize> {
 }
 
 fn find_button_presses_for_joltage(machine: &Machine) -> u64 {
-    let solver = Solver::new();
+    let optimize = Optimize::new();
 
     let button_pressed_n = machine
         .buttons
         .iter()
         .enumerate()
-        .map(|(idx, _)| Int::new_const(format!("button_{idx}").as_str()))
+        .map(|(idx, _)| Int::new_const(format!("button_{idx}")))
         .collect::<Vec<_>>();
 
     for (idx, joltage) in machine.joltages.iter().enumerate() {
@@ -73,20 +72,38 @@ fn find_button_presses_for_joltage(machine: &Machine) -> u64 {
             .map(|(btn_idx, _)| &button_pressed_n[btn_idx])
             .collect::<Vec<_>>();
 
-        let eq_result = joltage;
+        let eq_result = Int::from_u64(*joltage as u64);
         let sum = relevant_button_vars
             .iter()
-            .fold(Int::from_u64(0), |acc, x| acc.add(*x));
-        solver.assert(sum.eq(*eq_result));
+            .fold(Int::from_u64(0), |acc, x| acc + *x);
+        optimize.assert(&sum.eq(&eq_result));
     }
 
-    button_pressed_n.iter().for_each(|x| solver.assert(x.ge(0)));
+    button_pressed_n
+        .iter()
+        .for_each(|x| optimize.assert(&x.ge(&Int::from_u64(0))));
 
-    let result: u64 = solver
-        .solutions(button_pressed_n, true)
-        .map(|solution| solution.iter().map(|x| x.as_u64().unwrap()).sum::<u64>())
-        .min()
-        .unwrap();
+    // Minimize the sum of all button_pressed_n values
+    let total_sum = button_pressed_n
+        .iter()
+        .fold(Int::from_u64(0), |acc, x| acc + x);
+    optimize.minimize(&total_sum);
+
+    let result: u64 = match optimize.check(&[]) {
+        SatResult::Sat => {
+            let model = optimize.get_model().unwrap();
+            button_pressed_n
+                .iter()
+                .map(|x| model.eval(x, true).unwrap().as_u64().unwrap())
+                .sum::<u64>()
+        }
+        SatResult::Unsat => {
+            panic!("No solution found");
+        }
+        SatResult::Unknown => {
+            panic!("Solver returned unknown");
+        }
+    };
     println!("Solution: {:?}", result);
     result
 }
