@@ -5,3 +5,4 @@ edition = "2024"
  
 [dependencies]
 regex = "1.12.2"
+z3 = {version="0.19.5", features = ["gh-release"]}
